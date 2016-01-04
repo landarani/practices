@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+  xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <bean id="service1" class="net.shahram.practice.camel.impl.Serive1Imple" />
+  <bean id="service2" class="net.shahram.practice.camel.impl.Serive2Imple" />
+  <bean id="processor" class="net.shahram.practice.camel.StagedProcessor" />
+
+  <camel:camelContext id="inject-bean">
+
+    <camel:route>
+      <camel:from uri="direct:service1" />
+      <camel:setProperty customId="true" propertyName="serviceBean">
+        <camel:simple>${ref:service1}</camel:simple>
+      </camel:setProperty>
+      <camel:to uri="direct:start" />
+    </camel:route>
+
+    <camel:route>
+      <camel:from uri="direct:service2" />
+      <camel:setProperty propertyName="serviceBean">
+        <camel:simple>${ref:service2}</camel:simple>
+      </camel:setProperty>
+      <camel:to uri="direct:start" />
+    </camel:route>
+
+    <camel:route>
+      <camel:from uri="direct:start" />
+      <camel:bean ref="processor" method="handleBefore" />
+      <camel:to uri="bean:processor" />
+      <camel:bean ref="processor" method="handleAfter" />
+      <camel:to uri="mock:result" />
+    </camel:route>
+  </camel:camelContext>
+</beans>

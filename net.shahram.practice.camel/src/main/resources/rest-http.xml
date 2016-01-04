@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+  xmlns:cxf="http://camel.apache.org/schema/cxf"
+  xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/cxf http://camel.apache.org/schema/cxf/camel-cxf.xsd
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd
+          ">
+
+  <cxf:rsServer id="rsRestServer" address="http://127.0.0.1:8181/" />
+
+  <bean id="restProcessor" class="net.shahram.practice.camel.RestProcessor" />
+
+  <camel:camelContext id="rest-http">
+
+    <camel:route>
+      <camel:from uri="cxfrs:bean:rsRestServer?bindingStyle=SimpleConsumer&amp;resourceClasses=net.shahram.practice.camel.RestServiceApi" />
+      <camel:doTry>
+        <camel:recipientList delimiter="{}">
+          <camel:simple>direct:${header.operationName}</camel:simple>
+        </camel:recipientList>
+        <camel:to uri="direct:sendResponseAsJson" />
+        <camel:doCatch>
+          <camel:exception>java.lang.IllegalStateException</camel:exception>
+          <camel:to uri="direct:stopGracefully" />
+        </camel:doCatch>
+      </camel:doTry>
+    </camel:route>
+
+    <camel:route>
+      <camel:from uri="direct:goodResponse" />
+      <camel:to uri="bean:restProcessor?method=process(${header.id})" />
+      <camel:to uri="bean:restProcessor?method=respond" />
+    </camel:route>
+
+    <camel:route>
+      <camel:from uri="direct:badResponse" />
+      <camel:setBody>
+        <camel:simple>1</camel:simple>
+      </camel:setBody>
+      <camel:to uri="bean:restProcessor?method=respond" />
+    </camel:route>
+
+    <camel:route>
+      <camel:from uri="direct:sendResponseAsJson" />
+      <camel:filter>
+        <camel:simple>${body} != null</camel:simple>
+        <camel:marshal>
+          <camel:json library="Jackson" />
+        </camel:marshal>
+      </camel:filter>
+      <camel:to uri="direct:makeString" />
+      <camel:setHeader headerName="Content-Length">
+        <camel:simple>${body.length}</camel:simple>
+      </camel:setHeader>
+    </camel:route>
+
+    <camel:route id="makeString">
+      <camel:from uri="direct:makeString" />
+      <camel:choice>
+        <camel:when>
+          <camel:simple>${body} == null</camel:simple>
+          <camel:transform>
+            <camel:simple />
+          </camel:transform>
+        </camel:when>
+        <camel:otherwise>
+          <camel:transform>
+            <camel:simple>${bodyAs(java.lang.String)}</camel:simple>
+          </camel:transform>
+          <camel:transform>
+            <camel:simple>${body.trim}</camel:simple>
+          </camel:transform>
+        </camel:otherwise>
+      </camel:choice>
+    </camel:route>
+
+    <camel:route id="stopGracefully">
+      <camel:from uri="direct:stopGracefully" />
+      <camel:to uri="bean:restProcessor?method=makeError" />
+      <camel:marshal>
+        <camel:json library="Jackson" />
+      </camel:marshal>
+      <camel:transform>
+        <camel:simple>${bodyAs(java.lang.String)}</camel:simple>
+      </camel:transform>
+      <camel:setHeader headerName="Content-Length">
+        <camel:simple>${body.length}</camel:simple>
+      </camel:setHeader>
+    </camel:route>
+
+  </camel:camelContext>
+</beans>
