@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:camel="http://camel.apache.org/schema/spring"
+  xsi:schemaLocation="
+          http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
+          http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
+
+  <bean id="unrecognizedHeader" class="java.lang.Exception">
+    <constructor-arg value="Header is not recognized" />
+  </bean>
+
+  <camel:camelContext id="simple-test">
+    <!-- Changes in Exchange -->
+    <camel:route>
+      <camel:from uri="direct:startSimple" />
+      <camel:setHeader headerName="B"><camel:simple resultType="java.lang.Boolean">true</camel:simple></camel:setHeader>
+      <camel:choice>
+        <camel:when>
+          <!-- Maintain backwards compatabillity to mispelled 'acknowledgment' for a release -->
+          <camel:simple>${header.JMSType} in 'CLIMATE_SETTING_ACKNOWLEDGMENT,CLIMATE_SETTING_ACKNOWLEDGEMENT'</camel:simple>
+          <camel:to uri="log:net.shahram.practice.camel.simple?showAll=true&amp;level=INFO" />
+          <camel:to uri="mock:result" />
+        </camel:when>
+        <camel:when>
+          <camel:simple>${header.A} or ${header.B} and ${header.C}</camel:simple>
+          <camel:to uri="log:net.shahram.practice.camel.simple?showBody=true&amp;level=INFO" />
+          <camel:to uri="mock:result" />
+        </camel:when>
+        <camel:otherwise>
+          <camel:throwException ref="unrecognizedHeader" />
+        </camel:otherwise>
+      </camel:choice>
+    </camel:route>
+
+  </camel:camelContext>
+</beans>

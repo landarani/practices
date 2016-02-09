@@ -45,9 +45,7 @@
       <camel:from uri="direct:sendResponseAsJson" />
       <camel:filter>
         <camel:simple>${body} != null</camel:simple>
-        <camel:marshal>
-          <camel:json library="Jackson" />
-        </camel:marshal>
+        <camel:bean ref="restProcessor" method="toJson"/>
       </camel:filter>
       <camel:to uri="direct:makeString" />
       <camel:setHeader headerName="Content-Length">

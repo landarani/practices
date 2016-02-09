@@ -18,6 +18,9 @@ public class MarshalListTest {
     @Produce(uri = "direct:startSplit")
     protected ProducerTemplate templateSplit;
 
+    @Produce(uri = "direct:startSimple")
+    protected ProducerTemplate templateSimple;
+
     @Test
     public void runAllInOneTest() {
         templateAllInOne.sendBody(SERIAL_NO);
@@ -26,5 +29,10 @@ public class MarshalListTest {
     @Test
     public void runSplitTest() {
         templateSplit.sendBody(SERIAL_NO);
+    }
+
+    @Test
+    public void runSimpleSplit() {
+        templateSimple.sendBody(SERIAL_NO);
     }
 }

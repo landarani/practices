@@ -1,6 +1,9 @@
 package net.shahram.practice.camel;
 
 import lombok.extern.slf4j.Slf4j;
+import org.codehaus.jackson.map.ObjectMapper;
+
+import java.io.IOException;
 
 @Slf4j
 public class RestProcessor {
@@ -26,4 +29,7 @@ public class RestProcessor {
         return new ResponseObject(String.valueOf(1), "Unrecognized code.");
     }
 
+    public String toJson(Object object) throws IOException {
+        return new ObjectMapper().writeValueAsString(object);
+    }
 }

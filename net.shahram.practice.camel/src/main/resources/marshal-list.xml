@@ -10,15 +10,27 @@
 
     <!-- Changes in Exchange -->
     <camel:route>
+      <camel:from uri="direct:startSimple" />
+      <camel:to uri="bean:processor?method=getSimpleData" />
+      <camel:setHeader headerName="JMSType">
+        <camel:simple>SUBSCRIPTION</camel:simple>
+      </camel:setHeader>
+      <camel:to uri="direct:consumeList" />
+    </camel:route>
+
+    <camel:route>
       <camel:from uri="direct:startAllInOne" />
       <camel:setHeader headerName="event">
         <camel:simple>${body}</camel:simple>
       </camel:setHeader>
       <camel:to uri="bean:processor?method=getData" />
+      <camel:marshal>
+        <camel:json library="Jackson" />
+      </camel:marshal>
+      <camel:convertBodyTo type="java.lang.String" />
       <camel:setHeader headerName="JMSType">
         <camel:simple>SUBSCRIPTION</camel:simple>
       </camel:setHeader>
-      <camel:to uri="bean:processor?method=process(${body}, ${header.JMSType})" />
       <camel:to uri="direct:consumeList" />
     </camel:route>
 
@@ -26,14 +38,11 @@
     <camel:route>
       <camel:from uri="direct:consumeList" />
       <camel:unmarshal>
-        <camel:json library="Jackson"  unmarshalTypeName="java.util.ArrayList" />
+        <camel:json library="Jackson" unmarshalTypeName="net.shahram.practice.camel.ListWrapper" />
       </camel:unmarshal>
+      <camel:bean ref="processor" method="simplyPrint"/>
       <camel:split>
-        <camel:simple>${body}</camel:simple>
-        <camel:marshal>
-          <camel:json library="Jackson"/>
-        </camel:marshal>
-        <camel:convertBodyTo type="java.lang.String" />
+        <camel:simple>${body.subscriptions}</camel:simple>
         <camel:to uri="bean:processor?method=processOne(${body}, ${header.JMSType})" />
       </camel:split>
     </camel:route>
