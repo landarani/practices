@@ -4,8 +4,12 @@
           http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd
           http://camel.apache.org/schema/spring http://camel.apache.org/schema/spring/camel-spring.xsd">
 
-  <bean id="service1" class="net.shahram.practice.camel.impl.Serive1Imple" />
-  <bean id="service2" class="net.shahram.practice.camel.impl.Serive2Imple" />
+  <bean id="service1" class="net.shahram.practice.camel.impl.Serive1Imple">
+    <constructor-arg value="SERVICE1" />
+  </bean>
+  <bean id="service2" class="net.shahram.practice.camel.impl.Serive2Imple" >
+    <property name="typeEnum"><value>SERVICE2</value> </property>
+  </bean>
   <bean id="processor" class="net.shahram.practice.camel.StagedProcessor" />
 
   <camel:camelContext id="inject-bean">

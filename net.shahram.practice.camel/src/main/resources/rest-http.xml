@@ -29,6 +29,7 @@
 
     <camel:route>
       <camel:from uri="direct:goodResponse" />
+      <camel:setHeader headerName="bigHeader"><camel:simple>abcdef</camel:simple></camel:setHeader>
       <camel:to uri="bean:restProcessor?method=process(${header.id})" />
       <camel:to uri="bean:restProcessor?method=respond" />
     </camel:route>
