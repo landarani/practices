@@ -30,8 +30,19 @@ pipeline {
     }
 
     stage('COmplete') {
-      steps {
-        echo 'Completed'
+      parallel {
+        stage('COmplete') {
+          steps {
+            echo 'Completed'
+          }
+        }
+
+        stage('docker') {
+          steps {
+            build(job: 'ASXM-Parent', wait: true)
+          }
+        }
+
       }
     }
 
