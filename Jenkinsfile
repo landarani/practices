@@ -6,21 +6,31 @@ pipeline {
 
   }
   stages {
-    stage('test') {
-      agent {
-        node {
-          label 'el7'
+    stage('Test') {
+      parallel {
+        stage('Test') {
+          steps {
+            sh 'mvn --version'
+          }
+        }
+
+        stage('publish') {
+          steps {
+            echo 'Running Maven'
+          }
+        }
+
+        stage('Step 2') {
+          steps {
+            sh 'mvn --version'
+          }
         }
 
       }
+    }
+
+    stage('COmplete') {
       steps {
-        waitUntil(initialRecurrencePeriod: 100) {
-          node(label: 'java8') {
-            sh 'mvn --version'
-          }
-
-        }
-
         echo 'Completed'
       }
     }
