@@ -1,7 +1,7 @@
 pipeline {
   agent {
-    node {
-      label 'el6'
+    docker {
+      image 'docker pull maven:3.8.1-openjdk-11'
     }
 
   }
