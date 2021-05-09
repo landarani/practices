@@ -1,7 +1,7 @@
 pipeline {
   agent {
     docker {
-      image 'docker pull maven:3.8.1-openjdk-11'
+      image 'maven:3.8.1-openjdk-11'
     }
 
   }
@@ -30,19 +30,8 @@ pipeline {
     }
 
     stage('COmplete') {
-      parallel {
-        stage('COmplete') {
-          steps {
-            echo 'Completed'
-          }
-        }
-
-        stage('docker') {
-          steps {
-            build(job: 'ASXM-Parent', wait: true)
-          }
-        }
-
+      steps {
+        echo 'Completed'
       }
     }
 
